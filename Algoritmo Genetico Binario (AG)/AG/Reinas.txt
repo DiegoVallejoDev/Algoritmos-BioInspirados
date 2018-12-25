@@ -1,0 +1,99 @@
+import random
+import math
+import webbrowser
+import os
+import numpy as np
+from bitstring import BitArray
+
+SIMBOLO_POSICION = '='  # Simbolo que representara a una posicion no amenazada
+
+
+class N_Reinas:
+    def __init__(self, numeroN):
+        assert numeroN > 3, "El numero N (%i) ha de ser mayor de 3." % numeroN
+        self.numeroN = numeroN
+
+    def split_list(self, alist, wanted_parts=1):
+        return np.split(alist, wanted_parts)
+
+
+    def fitness(self, cromosoma):
+
+        board = self.split_list(cromosoma, self.numeroN)
+        record = 1000
+        decodedGenes = []
+        # print("cromosoma", cromosoma, " \n board", board)
+
+        decodedGenes = []
+        for row in range(len(board)):
+            # print(board)
+            decodedGenes.append(self.decodeGene(board[row]))
+        #print("Decoded",decodedGenes)
+        for x in range(len(decodedGenes)):
+            if self.positionIsAtacking(decodedGenes, x, decodedGenes[x]):
+                record = record - 1
+            if x >= self.numeroN or decodedGenes[x] >= self.numeroN:
+                record = record - 100
+
+        return record
+
+
+    def decodeGene(self, gen):
+        b = BitArray(gen).uint % self.numeroN
+        # print("GEN", gen,"BITS", b)
+        return b
+
+    def positionIsAtacking(self, cromosoma, X, Y):
+        for i in range(len(cromosoma)):
+            # Check Y
+            if (cromosoma[i] == Y):
+                return True
+            # Check Diagonals
+            if (cromosoma[i] - Y == i - X):
+                return True
+            if (cromosoma[i] - Y == X - i):
+                return True
+        return False
+
+    def imprimeResultado(self, cromosoma):
+        print("Tablero:")
+
+        html = "<!DOCTYPE html><html><title>Ajedrez</title>" \
+               "<style>body {\r\n\tbackground: #abdc28;\r\n\tpadding: 20px;\r\n}\r\n\r\n" \
+               "table {\r\n\tmargin: 0 auto;\r\n\tborder-collapse: collapse;\r\n\tbackground: black;\r\n}\r\n" \
+               ".hasQueen{\r\n\r\n}\r\ntd {\r\n    width: 40px; height: 40px;\r\n    color:red;\r\n}\r\n\r\n" \
+               "tr:nth-child(odd) td:nth-child(even), tr:nth-child(even) " \
+               "td:nth-child(odd) {\r\n\tbackground: white;\r\n}</style>" \
+               "\r\n<body>\n <table>"
+
+        board = self.split_list(cromosoma, self.numeroN)
+
+        decodedGenes = []
+        decodedCoords = []
+        for row in range(len(board)):
+            decodedGenes.append(self.decodeGene(board[row]))
+            decodedCoords.append([row, self.decodeGene(board[row])])
+        print(" board", decodedCoords)
+
+        for x in decodedGenes:
+            html = html + "<tr>"
+            for y in range(self.numeroN):
+                html = html + "<td>"
+                if x == y :
+                    print("X", end="")
+                    html = html + "X"
+                else:
+                    print("-", end="")
+                html = html + "</td>"
+
+            print("")
+            html = html + "</tr>\n"
+
+        html = html + "</table>\r\n</body>\r\n</html>"
+        Html_file = open("./utils/index.html", "w")
+        Html_file.write(html)
+        Html_file.close()
+
+        webbrowser.open('file://' + os.path.realpath("./utils/index.html"))
+
+

@@ -1,0 +1,25 @@
+from Reinas import *
+import AG
+import numpy as np
+from bitstring import BitArray
+
+
+def getNumero():
+    flag = True
+    while (flag):
+        entrada = input("Introduzca el valor de N.\n")
+        try:
+            numero = int(entrada)
+            if (numero > 3):
+                flag = False
+            else:
+                print("El numero ha de ser mayor de 3.")
+        except ValueError:
+            print("Introduzca un entero.")
+    return numero
+
+n = getNumero()
+reinas = N_Reinas(n)
+ag = AG.AG(cantidad_individuos=18, alelos=n*5, tamano_gen=1, generaciones=2000, p=0.01, problema=reinas, prin=1)
+ag.run()
+reinas.imprimeResultado(ag._mejor_historico._cromosoma)
